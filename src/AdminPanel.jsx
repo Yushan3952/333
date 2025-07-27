@@ -9,6 +9,7 @@ import {
 } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 
+// Firebase config 從 .env 讀取
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
