@@ -1,11 +1,11 @@
-
+// src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import AdminPanel from './AdminPanel';
+import App from './App';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <AdminPanel />
+    <App />
   </React.StrictMode>
 );
