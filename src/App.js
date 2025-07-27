@@ -1,8 +1,8 @@
+// src/App.js
 import React from 'react';
-import AdminPanel from './AdminPanel';
 
 function App() {
-  return <AdminPanel />;
+  return <h1>Hello TrashMap!</h1>;
 }
 
 export default App;
