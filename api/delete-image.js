@@ -1,21 +1,23 @@
-import { v2 as cloudinary } from 'cloudinary';
+import express from 'express';
+import cloudinary from 'cloudinary';
 
-cloudinary.config({
+const app = express();
+app.use(express.json());
+
+cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export default async function handler(req, res) {
-  if (req.method === 'POST') {
+app.post('/api/delete-image', async (req, res) => {
+  try {
     const { publicId } = req.body;
-    try {
-      await cloudinary.uploader.destroy(publicId);
-      res.status(200).json({ success: true });
-    } catch (error) {
-      res.status(500).json({ error: '刪除失敗', detail: error });
-    }
-  } else {
-    res.status(405).json({ error: 'Method Not Allowed' });
+    await cloudinary.v2.uploader.destroy(publicId);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
-}
+});
+
+export default app;
