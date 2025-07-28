@@ -9,14 +9,13 @@ import {
 } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 
-// Firebase config 從 .env 讀取
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: "AIzaSyDuqJXExGztRz1lKsfvPiZTjL2VN9v9_yo",
+  authDomain: "trashmap-d648e.firebaseapp.com",
+  projectId: "trashmap-d648e",
+  storageBucket: "trashmap-d648e.appspot.com",
+  messagingSenderId: "1057540241087",
+  appId: "1:1057540241087:web:ca7a8f3870cfb9fcd5a6c4"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -34,9 +33,13 @@ const AdminPanel = () => {
   }, [authenticated]);
 
   const fetchData = async () => {
-    const querySnapshot = await getDocs(collection(db, 'images'));
-    const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setImages(data);
+    try {
+      const querySnapshot = await getDocs(collection(db, 'images'));
+      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setImages(data);
+    } catch (error) {
+      console.error('資料讀取失敗', error);
+    }
   };
 
   const handleDelete = async (id, publicId) => {
@@ -82,8 +85,9 @@ const AdminPanel = () => {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">垃圾熱點圖片管理</h1>
+      {images.length === 0 && <p>尚無資料。</p>}
       {images.map(image => (
-        <div key={image.id} className="border p-4 mb-4 rounded">
+        <div key={image.id} className="border p-4 mb-4 rounded shadow bg-white">
           <img src={image.url} alt="uploaded" className="w-64 h-auto mb-2" />
           <p><strong>時間：</strong>{image.timestamp}</p>
           <p><strong>位置：</strong>{image.location}</p>
@@ -100,3 +104,4 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+
