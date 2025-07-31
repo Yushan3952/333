@@ -52,7 +52,7 @@ export default function App() {
 
     try {
       // ✅ 呼叫你的 Cloudinary 刪除 API（請改成你部署的網址）
-      const res = await fetch("https://你的後端網址/delete-image", {
+      const res = await fetch("https://https://trashmap-background.vercel.app//delete-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ public_id: item.public_id }),
