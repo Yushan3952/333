@@ -9,13 +9,14 @@ import {
 } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBVu5Wx2LfNlzQNaCtUZjsb_3GOYYW5cFo",
+  apiKey: "AIzaSyDuqJXExGztRz1lKsfvPiZTjL2VN9v9_yo",
   authDomain: "trashmap-d648e.firebaseapp.com",
   projectId: "trashmap-d648e",
   storageBucket: "trashmap-d648e.appspot.com",
-  messagingSenderId: "137644994241",
-  appId: "1:137644994241:web:77eeccc4e4e7c02b57ae4e",
+  messagingSenderId: "1057540241087",
+  appId: "1:1057540241087:web:ca7a8f3870cfb9fcd5a6c4"
 };
+
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
