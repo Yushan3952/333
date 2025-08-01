@@ -1,31 +1,39 @@
-// api/delete-image.js
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const cloudinary = require('cloudinary').v2;
 
-import { v2 as cloudinary } from "cloudinary";
+const app = express();
+const PORT = 3001;
 
+// ✅ Cloudinary 設定（整合完成）
 cloudinary.config({
-  cloud_name: "dwhn02tn5",
-  api_key: "1149371611626611",
-  api_secret: "HpMRkWs8c7wYPDuvQtxT2pmJ4vo",
+  cloud_name: 'dwhn02tn5',
+  api_key: '你的 Cloudinary API Key',
+  api_secret: '你的 Cloudinary API Secret',
 });
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "僅支援 POST 方法" });
-  }
+app.use(cors());
+app.use(bodyParser.json());
 
+app.post('/delete-image', async (req, res) => {
   const { public_id } = req.body;
 
   if (!public_id) {
-    return res.status(400).json({ error: "缺少 public_id" });
+    return res.status(400).json({ error: '缺少 public_id' });
   }
 
   try {
     const result = await cloudinary.uploader.destroy(public_id);
-    if (result.result !== "ok" && result.result !== "not found") {
-      throw new Error("Cloudinary 刪除失敗: " + result.result);
-    }
-    res.status(200).json({ success: true });
+    if (result.result !== 'ok') throw new Error('Cloudinary 刪除失敗');
+
+    res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || "伺服器錯誤" });
+    res.status(500).json({ error: err.message || '圖片刪除失敗' });
   }
-}
+});
+
+app.listen(PORT, () => {
+  console.log(`後端伺服器啟動：http://localhost:${PORT}`);
+});
+
