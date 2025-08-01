@@ -6,11 +6,10 @@ const cloudinary = require('cloudinary').v2;
 const app = express();
 const PORT = 3001;
 
-// ✅ Cloudinary 設定（整合完成）
 cloudinary.config({
   cloud_name: 'dwhn02tn5',
-  api_key: '你的 Cloudinary API Key',
-  api_secret: '你的 Cloudinary API Secret',
+  api_key: '899978884379254',
+  api_secret: 'N4OYQ4knD1T8FejxI7S0kACfXOU',
 });
 
 app.use(cors());
@@ -34,6 +33,5 @@ app.post('/delete-image', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`後端伺服器啟動：http://localhost:${PORT}`);
+  console.log(`伺服器啟動：http://localhost:${PORT}`);
 });
-
