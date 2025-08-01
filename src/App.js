@@ -8,14 +8,14 @@ import {
   doc,
 } from "firebase/firestore";
 
-// ✅ 你的 Firebase 設定
+// ✅ Firebase 設定（已整合）
 const firebaseConfig = {
-  apiKey: "AiX-tc-Rlr08KU8tPYZ4QcXDFdAx3LYHI",
+  apiKey: "AIzaSyDuqJXExGztRz1lKsfvPiZTjL2VN9v9_yo",
   authDomain: "trashmap-d648e.firebaseapp.com",
   projectId: "trashmap-d648e",
   storageBucket: "trashmap-d648e.appspot.com",
-  messagingSenderId: "527164483024",
-  appId: "1:527164483024:web:a40043feb0e05672c085d5",
+  messagingSenderId: "1057540241087",
+  appId: "1:1057540241087:web:ca7a8f3870cfb9fcd5a6c4",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -24,44 +24,39 @@ const db = getFirestore(app);
 export default function App() {
   const [dataList, setDataList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  // 讀取資料
+  const ADMIN_PASSWORD = "winnie3952";
+
   async function fetchData() {
     setLoading(true);
-    try {
-      const snapshot = await getDocs(collection(db, "garbage"));
-      const list = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setDataList(list);
-    } catch (err) {
-      alert("讀取失敗：" + err.message);
-    }
+    const colRef = collection(db, "garbage");
+    const snapshot = await getDocs(colRef);
+    const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    setDataList(list);
     setLoading(false);
   }
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (authenticated) {
+      fetchData();
+    }
+  }, [authenticated]);
 
-  // 刪除 Cloudinary + Firestore
   async function handleDelete(item) {
-    const confirmed = window.confirm("確定要刪除這筆資料嗎？");
-    if (!confirmed) return;
+    if (!window.confirm("確定要刪除這筆資料嗎？")) return;
 
     try {
-      // ✅ 呼叫你的 Cloudinary 刪除 API（請改成你部署的網址）
-      const res = await fetch("https://https://trashmap-background.vercel.app//delete-image", {
+      const res = await fetch("https://your-backend-domain.com/delete-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ public_id: item.public_id }),
       });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "刪除圖片失敗");
 
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Cloudinary 刪除失敗");
-
-      // ✅ 再刪除 Firestore 文件
       await deleteDoc(doc(db, "garbage", item.id));
       alert("刪除成功");
       fetchData();
@@ -70,21 +65,51 @@ export default function App() {
     }
   }
 
-  return (
-    <div style={{ maxWidth: 900, margin: "auto", padding: 20 }}>
-      <h1>TrashMap 管理後台</h1>
+  if (!authenticated) {
+    return (
+      <div style={{ maxWidth: 400, margin: "auto", padding: 20 }}>
+        <h2>管理登入</h2>
+        <input
+          type={showPassword ? "text" : "password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="輸入密碼"
+          style={{ width: "100%", padding: 10, marginBottom: 10 }}
+        />
+        <label>
+          <input
+            type="checkbox"
+            checked={showPassword}
+            onChange={() => setShowPassword(!showPassword)}
+          /> 顯示密碼
+        </label>
+        <br />
+        <button
+          onClick={() =>
+            password === ADMIN_PASSWORD
+              ? setAuthenticated(true)
+              : alert("密碼錯誤")
+          }
+          style={{ marginTop: 10 }}
+        >
+          登入
+        </button>
+      </div>
+    );
+  }
 
-      {loading ? (
-        <p>讀取中...</p>
-      ) : dataList.length === 0 ? (
-        <p>目前沒有資料</p>
-      ) : (
+  return (
+    <div style={{ maxWidth: 800, margin: "auto", padding: 20 }}>
+      <h1>TrashMap 管理後台</h1>
+      {loading && <p>讀取中...</p>}
+      {!loading && dataList.length === 0 && <p>沒有資料</p>}
+      {!loading && dataList.length > 0 && (
         <table border="1" cellPadding="10" style={{ width: "100%" }}>
           <thead>
             <tr>
               <th>圖片</th>
-              <th>時間</th>
-              <th>位置</th>
+              <th>上傳時間</th>
+              <th>上傳位置</th>
               <th>操作</th>
             </tr>
           </thead>
@@ -94,14 +119,14 @@ export default function App() {
                 <td>
                   <img
                     src={item.imageUrl}
-                    alt="垃圾照"
+                    alt="垃圾照片"
                     style={{ width: 120, height: 80, objectFit: "cover" }}
                   />
                 </td>
                 <td>
                   {item.timestamp?.seconds
                     ? new Date(item.timestamp.seconds * 1000).toLocaleString()
-                    : "無時間"}
+                    : "-"}
                 </td>
                 <td>
                   {item.location?.lat?.toFixed(5)},{" "}
