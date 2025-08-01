@@ -8,14 +8,13 @@ import {
   doc,
 } from "firebase/firestore";
 
-// ✅ Firebase 設定（已整合）
 const firebaseConfig = {
-  apiKey: "AIzaSyDuqJXExGztRz1lKsfvPiZTjL2VN9v9_yo",
+  apiKey: "AIzaSyBVu5Wx2LfNlzQNaCtUZjsb_3GOYYW5cFo",
   authDomain: "trashmap-d648e.firebaseapp.com",
   projectId: "trashmap-d648e",
   storageBucket: "trashmap-d648e.appspot.com",
-  messagingSenderId: "1057540241087",
-  appId: "1:1057540241087:web:ca7a8f3870cfb9fcd5a6c4",
+  messagingSenderId: "137644994241",
+  appId: "1:137644994241:web:77eeccc4e4e7c02b57ae4e",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -24,11 +23,11 @@ const db = getFirestore(app);
 export default function App() {
   const [dataList, setDataList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
 
-  const ADMIN_PASSWORD = "winnie3952";
+  const correctPassword = "winnie3952";
 
   async function fetchData() {
     setLoading(true);
@@ -40,20 +39,19 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (authenticated) {
-      fetchData();
-    }
+    if (authenticated) fetchData();
   }, [authenticated]);
 
   async function handleDelete(item) {
     if (!window.confirm("確定要刪除這筆資料嗎？")) return;
 
     try {
-      const res = await fetch("https://your-backend-domain.com/delete-image", {
+      const res = await fetch("https://trashmap-cloudinary-api.vercel.app/delete-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ public_id: item.public_id }),
       });
+
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "刪除圖片失敗");
 
@@ -67,32 +65,35 @@ export default function App() {
 
   if (!authenticated) {
     return (
-      <div style={{ maxWidth: 400, margin: "auto", padding: 20 }}>
-        <h2>管理登入</h2>
+      <div style={{ maxWidth: 400, margin: "100px auto", textAlign: "center" }}>
+        <h2>輸入密碼進入後台</h2>
         <input
           type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="輸入密碼"
-          style={{ width: "100%", padding: 10, marginBottom: 10 }}
+          placeholder="請輸入密碼"
+          style={{ padding: 8, width: "80%", marginBottom: 10 }}
         />
-        <label>
-          <input
-            type="checkbox"
-            checked={showPassword}
-            onChange={() => setShowPassword(!showPassword)}
-          /> 顯示密碼
-        </label>
-        <br />
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              checked={showPassword}
+              onChange={() => setShowPassword(!showPassword)}
+            /> 顯示密碼
+          </label>
+        </div>
         <button
-          onClick={() =>
-            password === ADMIN_PASSWORD
-              ? setAuthenticated(true)
-              : alert("密碼錯誤")
-          }
+          onClick={() => {
+            if (password === correctPassword) {
+              setAuthenticated(true);
+            } else {
+              alert("密碼錯誤");
+            }
+          }}
           style={{ marginTop: 10 }}
         >
-          登入
+          進入
         </button>
       </div>
     );
@@ -103,6 +104,7 @@ export default function App() {
       <h1>TrashMap 管理後台</h1>
       {loading && <p>讀取中...</p>}
       {!loading && dataList.length === 0 && <p>沒有資料</p>}
+
       {!loading && dataList.length > 0 && (
         <table border="1" cellPadding="10" style={{ width: "100%" }}>
           <thead>
@@ -123,14 +125,9 @@ export default function App() {
                     style={{ width: 120, height: 80, objectFit: "cover" }}
                   />
                 </td>
+                <td>{new Date(item.timestamp?.seconds * 1000).toLocaleString()}</td>
                 <td>
-                  {item.timestamp?.seconds
-                    ? new Date(item.timestamp.seconds * 1000).toLocaleString()
-                    : "-"}
-                </td>
-                <td>
-                  {item.location?.lat?.toFixed(5)},{" "}
-                  {item.location?.lng?.toFixed(5)}
+                  {item.location?.lat?.toFixed(5)}, {item.location?.lng?.toFixed(5)}
                 </td>
                 <td>
                   <button onClick={() => handleDelete(item)}>刪除</button>
