@@ -1,3 +1,4 @@
+// src/App.js
 import React, { useEffect, useState } from "react";
 import { initializeApp } from "firebase/app";
 import {
@@ -8,7 +9,6 @@ import {
   doc,
 } from "firebase/firestore";
 
-// ✅ Firebase 設定
 const firebaseConfig = {
   apiKey: "AIzaSyAeX-tc-Rlr08KU8tPYZ4QcXDFdAx3LYHI",
   authDomain: "trashmap-d648e.firebaseapp.com",
@@ -32,11 +32,16 @@ export default function App() {
 
   async function fetchData() {
     setLoading(true);
-    const colRef = collection(db, "images");
-    const snapshot = await getDocs(colRef);
-    const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    setDataList(list);
-    setLoading(false);
+    try {
+      const colRef = collection(db, "garbage");
+      const snapshot = await getDocs(colRef);
+      const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setDataList(list);
+    } catch (err) {
+      alert("讀取資料失敗：" + err.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -53,10 +58,18 @@ export default function App() {
         body: JSON.stringify({ public_id: item.publicId }),
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || "刪除圖片失敗");
+      let json = {};
+      try {
+        json = await res.json();
+      } catch (e) {
+        throw new Error("Cloudinary 回應格式錯誤");
+      }
 
-      await deleteDoc(doc(db, "images", item.id));
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "刪除圖片失敗");
+      }
+
+      await deleteDoc(doc(db, "garbage", item.id));
       alert("刪除成功");
       fetchData();
     } catch (err) {
@@ -106,6 +119,7 @@ export default function App() {
       <h1>TrashMap 管理後台</h1>
       {loading && <p>讀取中...</p>}
       {!loading && dataList.length === 0 && <p>目前沒有任何資料</p>}
+
       {!loading && dataList.length > 0 && (
         <table border="1" cellPadding="10" style={{ width: "100%" }}>
           <thead>
@@ -127,7 +141,9 @@ export default function App() {
                   />
                 </td>
                 <td>{new Date(item.timestamp).toLocaleString()}</td>
-                <td>{item.lat?.toFixed(5)}, {item.lng?.toFixed(5)}</td>
+                <td>
+                  {item.lat?.toFixed(5)}, {item.lng?.toFixed(5)}
+                </td>
                 <td>
                   <button onClick={() => handleDelete(item)}>刪除</button>
                 </td>
