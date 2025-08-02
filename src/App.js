@@ -8,7 +8,7 @@ import {
   doc,
 } from "firebase/firestore";
 
-// ✅ Firebase 設定（已替換成你提供的）
+// ✅ Firebase 設定
 const firebaseConfig = {
   apiKey: "AIzaSyAeX-tc-Rlr08KU8tPYZ4QcXDFdAx3LYHI",
   authDomain: "trashmap-d648e.firebaseapp.com",
@@ -32,7 +32,7 @@ export default function App() {
 
   async function fetchData() {
     setLoading(true);
-    const colRef = collection(db, "garbage");
+    const colRef = collection(db, "images"); // ✅ 改為正確集合名稱
     const snapshot = await getDocs(colRef);
     const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     setDataList(list);
@@ -50,13 +50,13 @@ export default function App() {
       const res = await fetch("https://trashmap-api.vercel.app/delete-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ public_id: item.public_id }),
+        body: JSON.stringify({ public_id: item.publicId }), // ✅ 大小寫正確
       });
 
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "刪除圖片失敗");
 
-      await deleteDoc(doc(db, "garbage", item.id));
+      await deleteDoc(doc(db, "images", item.id)); // ✅ 改為正確集合名稱
       alert("刪除成功");
       fetchData();
     } catch (err) {
@@ -122,19 +122,18 @@ export default function App() {
               <tr key={item.id}>
                 <td>
                   <img
-                    src={item.imageUrl}
+                    src={item.url} // ✅ 改為 item.url
                     alt="垃圾照片"
                     style={{ width: 120, height: 80, objectFit: "cover" }}
                   />
                 </td>
                 <td>
-                  {item.timestamp?.seconds
-                    ? new Date(item.timestamp.seconds * 1000).toLocaleString()
+                  {item.timestamp
+                    ? new Date(item.timestamp).toLocaleString()
                     : "無資料"}
                 </td>
                 <td>
-                  {item.location?.lat?.toFixed(5)},{" "}
-                  {item.location?.lng?.toFixed(5)}
+                  {item.lat?.toFixed(5)}, {item.lng?.toFixed(5)}
                 </td>
                 <td>
                   <button onClick={() => handleDelete(item)}>刪除</button>
@@ -147,4 +146,3 @@ export default function App() {
     </div>
   );
 }
-
