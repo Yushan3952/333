@@ -32,7 +32,7 @@ export default function App() {
 
   async function fetchData() {
     setLoading(true);
-    const colRef = collection(db, "images"); // ✅ 改為正確集合名稱
+    const colRef = collection(db, "images");
     const snapshot = await getDocs(colRef);
     const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     setDataList(list);
@@ -47,16 +47,16 @@ export default function App() {
     if (!window.confirm("確定要刪除這筆資料嗎？")) return;
 
     try {
-      const res = await fetch("https://trashmap-api.vercel.app/delete-image", {
+      const res = await fetch("/api/delete-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ public_id: item.publicId }), // ✅ 大小寫正確
+        body: JSON.stringify({ public_id: item.publicId }),
       });
 
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "刪除圖片失敗");
 
-      await deleteDoc(doc(db, "images", item.id)); // ✅ 改為正確集合名稱
+      await deleteDoc(doc(db, "images", item.id));
       alert("刪除成功");
       fetchData();
     } catch (err) {
@@ -113,7 +113,7 @@ export default function App() {
             <tr>
               <th>圖片</th>
               <th>上傳時間</th>
-              <th>上傳位置</th>
+              <th>位置</th>
               <th>操作</th>
             </tr>
           </thead>
@@ -122,7 +122,7 @@ export default function App() {
               <tr key={item.id}>
                 <td>
                   <img
-                    src={item.url} // ✅ 改為 item.url
+                    src={item.url}
                     alt="垃圾照片"
                     style={{ width: 120, height: 80, objectFit: "cover" }}
                   />
