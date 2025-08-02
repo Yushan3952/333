@@ -54,7 +54,7 @@ export default function App() {
       });
 
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "刪除圖片失敗");
+      if (!res.ok || !json.success) throw new Error(json.error || "刪除圖片失敗");
 
       await deleteDoc(doc(db, "images", item.id));
       alert("刪除成功");
@@ -106,14 +106,13 @@ export default function App() {
       <h1>TrashMap 管理後台</h1>
       {loading && <p>讀取中...</p>}
       {!loading && dataList.length === 0 && <p>目前沒有任何資料</p>}
-
       {!loading && dataList.length > 0 && (
         <table border="1" cellPadding="10" style={{ width: "100%" }}>
           <thead>
             <tr>
               <th>圖片</th>
               <th>上傳時間</th>
-              <th>位置</th>
+              <th>上傳位置</th>
               <th>操作</th>
             </tr>
           </thead>
@@ -127,14 +126,8 @@ export default function App() {
                     style={{ width: 120, height: 80, objectFit: "cover" }}
                   />
                 </td>
-                <td>
-                  {item.timestamp
-                    ? new Date(item.timestamp).toLocaleString()
-                    : "無資料"}
-                </td>
-                <td>
-                  {item.lat?.toFixed(5)}, {item.lng?.toFixed(5)}
-                </td>
+                <td>{new Date(item.timestamp).toLocaleString()}</td>
+                <td>{item.lat?.toFixed(5)}, {item.lng?.toFixed(5)}</td>
                 <td>
                   <button onClick={() => handleDelete(item)}>刪除</button>
                 </td>
