@@ -1,107 +1,98 @@
-import React, { useState, useEffect } from "react";
-import { initializeApp } from "firebase/app";
+import React, { useEffect, useState } from 'react';
 import {
   getFirestore,
   collection,
   getDocs,
   deleteDoc,
   doc,
-} from "firebase/firestore";
-import "./index.css";
+} from 'firebase/firestore';
+import './App.css';
+import './index.css';
+import './firebase'; // 確保已初始化 Firebase
 
-// ✅ Firebase 設定（請確認為你的設定）
-const firebaseConfig = {
-  apiKey: "你的API金鑰",
-  authDomain: "你的authDomain",
-  projectId: "trashmap-d648e",
-  storageBucket: "你的storageBucket",
-  messagingSenderId: "你的senderId",
-  appId: "你的appId",
-};
+const PASSWORD = 'winnie3952';
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const App = () => {
+function App() {
   const [images, setImages] = useState([]);
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState('');
+  const [authorized, setAuthorized] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const correctPassword = "winnie3952";
-
-  useEffect(() => {
-    if (authenticated) {
-      fetchImages();
-    }
-  }, [authenticated]);
+  const db = getFirestore();
+  const imagesCollection = collection(db, 'images');
 
   const fetchImages = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "images"));
-      const imageData = querySnapshot.docs.map((doc) => ({
+      setLoading(true);
+      const snapshot = await getDocs(imagesCollection);
+      const fetchedImages = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setImages(imageData);
+      setImages(fetchedImages);
     } catch (error) {
-      console.error("載入圖片失敗：", error);
-      alert("載入圖片失敗");
+      console.error('讀取失敗：', error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDelete = async (docId, publicId) => {
-    const confirmDelete = window.confirm("確定要刪除這張圖片嗎？");
+  useEffect(() => {
+    if (authorized) fetchImages();
+  }, [authorized]);
 
+  const handleDelete = async (id, public_id) => {
+    const confirmDelete = window.confirm('確定要刪除這張圖片？');
     if (!confirmDelete) return;
 
     try {
-      // ✅ 呼叫 Cloudinary 刪除 API
-      const response = await fetch("https://trashmap-api.vercel.app/delete-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ public_id: publicId }),
+      const response = await fetch('https://222-nu-one.vercel.app/delete-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ public_id }),
       });
 
       const result = await response.json();
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || "Cloudinary 刪除失敗");
+      if (!response.ok) {
+        throw new Error(result.error || 'Cloudinary 刪除失敗');
       }
 
-      // ✅ 刪除 Firestore 文件
-      await deleteDoc(doc(db, "images", docId));
-      alert("圖片刪除成功！");
+      await deleteDoc(doc(db, 'images', id));
+      alert('✅ 刪除成功');
       fetchImages();
     } catch (error) {
-      console.error("刪除失敗：", error);
+      console.error('刪除失敗：', error);
       alert(`刪除失敗：${error.message}`);
     }
   };
 
   const handleLogin = () => {
-    if (password === correctPassword) {
-      setAuthenticated(true);
+    if (password === PASSWORD) {
+      setAuthorized(true);
     } else {
-      alert("密碼錯誤！");
+      alert('密碼錯誤');
     }
   };
 
-  if (!authenticated) {
+  if (!authorized) {
     return (
       <div className="login-container">
         <h2>管理員登入</h2>
         <input
-          type={showPassword ? "text" : "password"}
-          placeholder="輸入密碼"
+          type={showPassword ? 'text' : 'password'}
           value={password}
+          placeholder="輸入密碼"
           onChange={(e) => setPassword(e.target.value)}
         />
         <label>
           <input
             type="checkbox"
             checked={showPassword}
-            onChange={() => setShowPassword((prev) => !prev)}
+            onChange={() => setShowPassword(!showPassword)}
           />
           顯示密碼
         </label>
@@ -112,19 +103,23 @@ const App = () => {
 
   return (
     <div className="app">
-      <h1>TrashMap 管理後台</h1>
-      <div className="image-grid">
-        {images.map((img) => (
-          <div key={img.id} className="image-card">
-            <img src={img.url} alt="uploaded" />
-            <button onClick={() => handleDelete(img.id, img.public_id)}>
-              刪除
-            </button>
-          </div>
-        ))}
-      </div>
+      <h2>🗑️ TrashMap 管理後台</h2>
+      {loading ? (
+        <p>讀取中...</p>
+      ) : images.length === 0 ? (
+        <p>目前沒有圖片</p>
+      ) : (
+        <div className="image-grid">
+          {images.map(({ id, imageUrl, public_id }) => (
+            <div key={id} className="image-card">
+              <img src={imageUrl} alt="Trash" />
+              <button onClick={() => handleDelete(id, public_id)}>刪除</button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
-};
+}
 
 export default App;
