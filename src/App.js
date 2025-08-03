@@ -46,6 +46,8 @@ function App() {
     const confirmDelete = window.confirm('確定要刪除這張圖片？');
     if (!confirmDelete) return;
 
+    console.log('🧪 準備刪除圖片：', { id, public_id }); // <--- 加入除錯資訊
+
     try {
       const response = await fetch('https://222-nu-one.vercel.app/delete-image', {
         method: 'POST',
@@ -56,6 +58,7 @@ function App() {
       });
 
       const result = await response.json();
+      console.log('✅ Cloudinary 回應：', result); // <--- 回應除錯
 
       if (!response.ok) {
         throw new Error(result.error || 'Cloudinary 刪除失敗');
@@ -65,7 +68,7 @@ function App() {
       alert('✅ 刪除成功');
       fetchImages();
     } catch (error) {
-      console.error('刪除失敗：', error);
+      console.error('❌ 刪除失敗：', error);
       alert(`刪除失敗：${error.message}`);
     }
   };
