@@ -1,23 +1,25 @@
-// index.js
+// ✅ 匯入必要模組
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cloudinary = require('cloudinary').v2;
 
+// ✅ 建立 Express 應用程式
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
-// ✅ 直接寫入 Cloudinary 金鑰（已從你提供資訊整合）
+// ✅ 設定 Cloudinary 金鑰（使用者提供）
 cloudinary.config({
   cloud_name: 'dwhn02tn5',
-  api_key: '你的 Cloudinary API Key',
-  api_secret: '你的 Cloudinary API Secret',
+  api_key: '222767751424686',
+  api_secret: 'irVgEGZA-GfmrRJImjq7hwqz63U',
 });
 
+// ✅ 中介軟體
 app.use(cors());
 app.use(bodyParser.json());
 
-// ✅ 刪除圖片 API
+// ✅ 刪除圖片 API 路由
 app.post('/delete-image', async (req, res) => {
   const { public_id } = req.body;
 
@@ -28,13 +30,13 @@ app.post('/delete-image', async (req, res) => {
   try {
     const result = await cloudinary.uploader.destroy(public_id);
     if (result.result !== 'ok') throw new Error('Cloudinary 刪除失敗');
-
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message || '圖片刪除失敗' });
   }
 });
 
+// ✅ 啟動伺服器
 app.listen(PORT, () => {
-  console.log(`後端伺服器已啟動：http://localhost:${PORT}`);
+  console.log(`✅ Cloudinary 刪除 API 已啟動：http://localhost:${PORT}`);
 });
