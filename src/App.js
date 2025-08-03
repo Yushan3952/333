@@ -46,9 +46,9 @@ function App() {
     const confirmDelete = window.confirm('確定要刪除這張圖片？');
     if (!confirmDelete) return;
 
-    console.log('🧪 準備刪除圖片：', { id, public_id }); // <--- 加入除錯資訊
-
     try {
+      console.log('🧪 準備刪除圖片：', { id, public_id });
+
       const response = await fetch('https://222-nu-one.vercel.app/delete-image', {
         method: 'POST',
         headers: {
@@ -58,7 +58,7 @@ function App() {
       });
 
       const result = await response.json();
-      console.log('✅ Cloudinary 回應：', result); // <--- 回應除錯
+      console.log('✅ Cloudinary 回應：', result);
 
       if (!response.ok) {
         throw new Error(result.error || 'Cloudinary 刪除失敗');
@@ -113,12 +113,15 @@ function App() {
         <p>目前沒有圖片</p>
       ) : (
         <div className="image-grid">
-          {images.map(({ id, imageUrl, public_id }) => (
-            <div key={id} className="image-card">
-              <img src={imageUrl} alt="Trash" />
-              <button onClick={() => handleDelete(id, public_id)}>刪除</button>
-            </div>
-          ))}
+          {images.map(({ id, imageUrl, public_id, publicId }) => {
+            const pid = public_id || publicId; // 兼容 Firestore 欄位名稱
+            return (
+              <div key={id} className="image-card">
+                <img src={imageUrl} alt="Trash" />
+                <button onClick={() => handleDelete(id, pid)}>刪除</button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -126,3 +129,4 @@ function App() {
 }
 
 export default App;
+
