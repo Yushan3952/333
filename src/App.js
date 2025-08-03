@@ -6,6 +6,7 @@ import {
   deleteDoc,
   doc,
 } from 'firebase/firestore';
+import './App.css';
 import './index.css';
 import './firebase'; // 確保已初始化 Firebase
 
