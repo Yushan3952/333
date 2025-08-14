@@ -1,17 +1,13 @@
-// firebase.js
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+const admin = require('firebase-admin');
+require('dotenv').config();
 
-const firebaseConfig = {
-  apiKey: 'AIzaSyAeX-tc-Rlr08KU8tPYZ4QcXDFdAx3LYHI',
-  authDomain: 'trashmap-d648e.firebaseapp.com',
-  projectId: 'trashmap-d648e',
-  storageBucket: 'trashmap-d648e.appspot.com',
-  messagingSenderId: '527164483024',
-  appId: '1:527164483024:web:a3203461b112e085c085d5'
-};
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+  }),
+});
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-export { db };
+const db = admin.firestore();
+module.exports = db;
