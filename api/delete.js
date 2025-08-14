@@ -15,8 +15,20 @@ export default async function handler(req, res) {
   if (!id) return res.status(400).json({ error: '需要 id' });
 
   try {
+    // 刪除 Firebase document
     await db.collection('points').doc(id).delete();
-    if (publicId) await cloudinary.uploader.destroy(publicId);
+
+    // 刪除 Cloudinary 圖片（安全處理）
+    if (publicId) {
+      try {
+        const result = await cloudinary.uploader.destroy(publicId);
+        if (result.result === 'not found') {
+          console.warn(`Cloudinary 找不到檔案 ${publicId}`);
+        }
+      } catch (err) {
+        console.warn(`Cloudinary 刪除錯誤: ${err.message}`);
+      }
+    }
 
     res.status(200).json({ success: true, message: `已刪除點位 ${id}` });
   } catch (err) {
