@@ -3,16 +3,20 @@ import { db } from "../../firebase.js";
 import { doc, deleteDoc } from "firebase/firestore";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST")
-    return res.status(405).json({ success: false, message: "POST only" });
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-password");
 
-  const { password, id } = req.body;
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") return res.status(405).json({ success: false, message: "POST only" });
 
-  if (password !== process.env.ADMIN_PASSWORD)
-    return res.status(403).json({ success: false, message: "wrong password" });
+  const password = req.headers["x-password"];
+  if (password !== process.env.ADMIN_PASSWORD) {
+    return res.status(403).json({ success: false, message: "密碼錯誤" });
+  }
 
-  if (!id)
-    return res.status(400).json({ success: false, message: "missing id" });
+  const { id } = req.body;
+  if (!id) return res.status(400).json({ success: false, message: "缺少 id" });
 
   try {
     await deleteDoc(doc(db, "points", id));
