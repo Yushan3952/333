@@ -1,9 +1,16 @@
-import { v2 as cloudinary } from 'cloudinary';
+// firebase.js
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const firebaseConfig = {
+  apiKey: "AIzaSyAeX-tc-Rlr08KU8tPYZ4QcXDFdAx3LYHI",
+  authDomain: "trashmap-d648e.firebaseapp.com",
+  projectId: "trashmap-d648e",
+  storageBucket: "trashmap-d648e.firebasestorage.app",
+  messagingSenderId: "527164483024",
+  appId: "1:527164483024:web:a3203461b112e085c085d5",
+  measurementId: "G-GHC0X07VC4"
+};
 
-export default cloudinary;
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
