@@ -1,8 +1,14 @@
-export default function handler(req, res) {
-  const points = [
-    { id: 1, lat: 23.7, lng: 120.9, type: "塑膠", description: "河岸有垃圾" },
-    { id: 2, lat: 23.6, lng: 120.95, type: "寶特瓶", description: "漂浮在水面" }
-  ];
+// backend/api/points.js
+import { db } from "../../firebase.js";
+import { collection, getDocs } from "firebase/firestore";
 
-  res.status(200).json(points);
+export default async function handler(req, res) {
+  try {
+    const snap = await getDocs(collection(db, "points"));
+    const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    res.status(200).json({ success: true, points: data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 }
