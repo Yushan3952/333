@@ -1,4 +1,4 @@
-// backend/api/add.js
+// backend/api/add.j
 import { db } from "../../firebase.js";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 
