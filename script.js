@@ -1,27 +1,50 @@
-// backend/api/delete.js
-import { db } from "../../firebase.js";
-import { doc, deleteDoc } from "firebase/firestore";
+const map = L.map('map').setView([23.8, 120.97], 8);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-password");
+const PASSWORD = "你的密碼"; // 對應後端 ADMIN_PASSWORD
 
-  if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST") return res.status(405).json({ success: false, message: "POST only" });
-
-  const password = req.headers["x-password"];
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(403).json({ success: false, message: "密碼錯誤" });
-  }
-
-  const { id } = req.body;
-  if (!id) return res.status(400).json({ success: false, message: "缺少 id" });
-
+async function loadPoints() {
   try {
-    await deleteDoc(doc(db, "points", id));
-    res.status(200).json({ success: true });
+    const res = await fetch('https://trashmap-background.vercel.app/api/points', {
+      method: 'GET',
+      headers: { 'x-password': PASSWORD }
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || "讀取失敗");
+
+    data.points.forEach(p => {
+      L.marker([p.lat, p.lng])
+        .addTo(map)
+        .bindPopup(`<b>ID:</b>${p.id}<br><b>Note:</b>${p.note || ''}<br>
+                    <button onclick="deletePoint('${p.id}')">刪除</button>`);
+    });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    alert("無法讀取後端資料: " + err.message);
   }
 }
+
+async function deletePoint(id) {
+  if (!confirm("確定要刪除這個垃圾點嗎？")) return;
+
+  try {
+    const res = await fetch('https://trashmap-background.vercel.app/api/delete', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-password': PASSWORD
+      },
+      body: JSON.stringify({ id })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("刪除成功");
+      location.reload();
+    } else {
+      alert("刪除失敗: " + data.message);
+    }
+  } catch (err) {
+    alert("刪除錯誤: " + err.message);
+  }
+}
+
+loadPoints();
