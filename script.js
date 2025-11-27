@@ -1,30 +1,27 @@
-// 建立地圖
-const map = L.map('map').setView([23.8, 120.97], 8);
+// backend/api/delete.js
+import { db } from "../../firebase.js";
+import { doc, deleteDoc } from "firebase/firestore";
 
-// 使用 OpenStreetMap 圖資
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-}).addTo(map);
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-password");
 
-// 從後端取得資料
-async function loadPoints() {
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") return res.status(405).json({ success: false, message: "POST only" });
+
+  const password = req.headers["x-password"];
+  if (password !== process.env.ADMIN_PASSWORD) {
+    return res.status(403).json({ success: false, message: "密碼錯誤" });
+  }
+
+  const { id } = req.body;
+  if (!id) return res.status(400).json({ success: false, message: "缺少 id" });
+
   try {
-    const res = await fetch('/api/points');
-    const data = await res.json();
-
-    data.forEach(p => {
-      L.marker([p.lat, p.lng])
-        .addTo(map)
-        .bindPopup(`
-          <b>垃圾類型：</b> ${p.type}<br>
-          <b>描述：</b> ${p.description}<br>
-          <b>ID：</b> ${p.id}
-        `);
-    });
-
+    await deleteDoc(doc(db, "points", id));
+    res.status(200).json({ success: true });
   } catch (err) {
-    alert("無法讀取後端資料");
+    res.status(500).json({ success: false, error: err.message });
   }
 }
-
-loadPoints();
