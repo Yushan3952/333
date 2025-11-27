@@ -1,4 +1,4 @@
-// backend/api/delete.js
+// backend/api/delete.j
 import { db } from "../../firebase.js";
 import { doc, deleteDoc } from "firebase/firestore";
 
