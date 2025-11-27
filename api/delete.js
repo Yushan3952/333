@@ -1,18 +1,23 @@
-iexport default function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
-  }
+// backend/api/delete.js
+import { db } from "../../firebase.js";
+import { doc, deleteDoc } from "firebase/firestore";
 
-  const { id } = req.body;
+export default async function handler(req, res) {
+  if (req.method !== "POST")
+    return res.status(405).json({ success: false, message: "POST only" });
 
-  // 真正專案你會連資料庫，這裡先回應成功
-  res.status(200).json({ success: true, deletedId: id });
-}
+  const { password, id } = req.body;
 
+  if (password !== process.env.ADMIN_PASSWORD)
+    return res.status(403).json({ success: false, message: "wrong password" });
 
-    res.status(200).json({ success: true, message: `已刪除點位 ${id}` });
+  if (!id)
+    return res.status(400).json({ success: false, message: "missing id" });
+
+  try {
+    await deleteDoc(doc(db, "points", id));
+    res.status(200).json({ success: true });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 }
