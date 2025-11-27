@@ -1,19 +1,8 @@
-import db from '../utils/firebase.js';
-import dotenv from 'dotenv';
-dotenv.config();
+export default function handler(req, res) {
+  const points = [
+    { id: 1, lat: 23.7, lng: 120.9, type: "塑膠", description: "河岸有垃圾" },
+    { id: 2, lat: 23.6, lng: 120.95, type: "寶特瓶", description: "漂浮在水面" }
+  ];
 
-export default async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).json({ error: '只支援 GET' });
-
-  const password = req.headers['x-password'];
-  if (password !== process.env.PASSWORD) return res.status(401).json({ error: '密碼錯誤' });
-
-  try {
-    const snapshot = await db.collection('points').get();
-    const points = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.status(200).json(points);
-  } catch (err) {
-    console.error('Firebase 取得資料錯誤：', err);
-    res.status(500).json({ error: '取得 Firebase 資料失敗' });
-  }
+  res.status(200).json(points);
 }
