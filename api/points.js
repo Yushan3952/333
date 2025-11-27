@@ -1,4 +1,4 @@
-// backend/api/points.js
+// backend/api/points.j
 import { db } from "../../firebase.js";
 import { collection, getDocs } from "firebase/firestore";
 
