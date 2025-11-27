@@ -1,4 +1,4 @@
-iimport db from '../utils/firebase.js';
+import db from '../utils/firebase.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
