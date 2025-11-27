@@ -1,7 +1,7 @@
 const map = L.map('map').setView([23.8, 120.97], 8);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-const PASSWORD = "winnie3952"; // 對應後端 ADMIN_PASSWORD
+const PASSWORD = "winnie3952"; // 對應後端 ADMIN_PASSWOR
 
 async function loadPoints() {
   try {
